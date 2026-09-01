@@ -18,6 +18,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
+import org.springframework.security.oauth2.core.oidc.OidcScopes;
+import org.springframework.security.oauth2.core.oidc.endpoint.OidcParameterNames;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.server.authorization.OAuth2TokenType;
 import org.springframework.security.oauth2.server.authorization.client.InMemoryRegisteredClientRepository;
@@ -48,6 +50,9 @@ public class AuthorizationServerConfig {
 
         OAuth2AuthorizationServerConfiguration.applyDefaultSecurity(http);
 
+        http.getConfigurer(OAuth2AuthorizationServerConfigurer.class)
+            .oidc(Customizer.withDefaults());
+
         http
             .exceptionHandling(exceptions -> exceptions
                 .authenticationEntryPoint(
@@ -76,6 +81,8 @@ public class AuthorizationServerConfig {
                 .authorizationGrantType(
                         AuthorizationGrantType.REFRESH_TOKEN)
                 .redirectUri("http://127.0.0.1:8080/login/oauth2/code/project3")
+                .scope(OidcScopes.OPENID)
+                .scope(OidcScopes.PROFILE)
                 .scope("read")
                 .clientSettings(
                         ClientSettings.builder()
@@ -104,23 +111,26 @@ public class AuthorizationServerConfig {
     @Bean
     public OAuth2TokenCustomizer<JwtEncodingContext> jwtTokenCustomizer() {
         return context -> {
-            if (OAuth2TokenType.ACCESS_TOKEN.equals(context.getTokenType())) {
+            if (OAuth2TokenType.ACCESS_TOKEN.equals(context.getTokenType()) ||
+                OidcParameterNames.ID_TOKEN.equals(context.getTokenType().getValue())) {
                 Authentication principal = context.getPrincipal();
 
-                Set<String> roles = principal.getAuthorities().stream()
-                        .map(GrantedAuthority::getAuthority)
-                        .filter(auth -> auth.startsWith("ROLE_"))
-                        .map(auth -> auth.substring(5)) // strip "ROLE_" prefix
-                        .collect(Collectors.toSet());
+                if (principal != null) {
+                    Set<String> roles = principal.getAuthorities().stream()
+                            .map(GrantedAuthority::getAuthority)
+                            .filter(auth -> auth.startsWith("ROLE_"))
+                            .map(auth -> auth.substring(5)) // strip "ROLE_" prefix
+                            .collect(Collectors.toSet());
 
-                Set<String> permissions = principal.getAuthorities().stream()
-                        .map(GrantedAuthority::getAuthority)
-                        .filter(auth -> !auth.startsWith("ROLE_"))
-                        .collect(Collectors.toSet());
+                    Set<String> permissions = principal.getAuthorities().stream()
+                            .map(GrantedAuthority::getAuthority)
+                            .filter(auth -> !auth.startsWith("ROLE_"))
+                            .collect(Collectors.toSet());
 
-                JwtClaimsSet.Builder claims = context.getClaims();
-                claims.claim("roles", roles);
-                claims.claim("permissions", permissions);
+                    JwtClaimsSet.Builder claims = context.getClaims();
+                    claims.claim("roles", roles);
+                    claims.claim("permissions", permissions);
+                }
             }
         };
     }
