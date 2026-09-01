@@ -51,6 +51,8 @@ public class AuthorizationServerConfig {
         OAuth2AuthorizationServerConfiguration.applyDefaultSecurity(http);
 
         http.getConfigurer(OAuth2AuthorizationServerConfigurer.class)
+            .authorizationEndpoint(authorizationEndpoint ->
+                authorizationEndpoint.consentPage("/oauth2/consent"))
             .oidc(Customizer.withDefaults());
 
         http
@@ -86,7 +88,7 @@ public class AuthorizationServerConfig {
                 .scope("read")
                 .clientSettings(
                         ClientSettings.builder()
-                                .requireAuthorizationConsent(false)
+                                .requireAuthorizationConsent(true)
                                 .build())
                 .build();
 

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>OAuth2 Authorization Consent</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f8f9fa; margin: 0; padding: 50px 20px; display: flex; justify-content: center; }
+        .consent-card { background: #ffffff; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); padding: 30px; max-width: 480px; width: 100%; text-align: center; }
+        h2 { margin-top: 0; color: #2c3e50; }
+        .info { margin: 15px 0; color: #555; font-size: 15px; }
+        .scope-box { background: #f1f3f5; border-radius: 6px; padding: 15px; text-align: left; margin: 20px 0; }
+        .scope-item { margin: 8px 0; font-size: 14px; color: #333; }
+        .btn-container { display: flex; gap: 12px; margin-top: 25px; }
+        .btn { flex: 1; padding: 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 15px; }
+        .btn-allow { background-color: #27ae60; color: white; }
+        .btn-allow:hover { background-color: #219653; }
+        .btn-deny { background-color: #e74c3c; color: white; }
+        .btn-deny:hover { background-color: #c0392b; }
+    </style>
+</head>
+<body>
+<div class="consent-card">
+    <h2>Authorization Request</h2>
+    <div class="info">
+        <p>The application <strong th:text="${clientName}">Client Application</strong> requests permission to access your account (<strong th:text="${principalName}">User</strong>).</p>
+    </div>
+
+    <form method="post" action="/oauth2/authorize">
+        <input type="hidden" name="client_id" th:value="${clientId}"/>
+        <input type="hidden" name="state" th:value="${state}"/>
+
+        <div class="scope-box">
+            <strong>Requested Permissions:</strong>
+            <div th:each="s : ${scopes}" class="scope-item">
+                <input type="checkbox" name="scope" th:value="${s}" th:id="${s}" checked="checked"/>
+                <label th:for="${s}" th:text="${s}">scope</label>
+            </div>
+        </div>
+
+        <div class="btn-container">
+            <button class="btn btn-allow" type="submit" id="submit-consent">ALLOW</button>
+            <button class="btn btn-deny" type="button" onclick="document.getElementById('deny-form').submit()">DENY</button>
+        </div>
+    </form>
+
+    <form id="deny-form" method="post" action="/oauth2/authorize">
+        <input type="hidden" name="client_id" th:value="${clientId}"/>
+        <input type="hidden" name="state" th:value="${state}"/>
+    </form>
+</div>
+</body>
+</html>
