@@ -54,6 +54,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/register").permitAll()
                 .requestMatchers("/api/auth/login").permitAll()
+                .requestMatchers("/api/auth/password-reset/**").permitAll()
                 .anyRequest().authenticated()
             )
             .formLogin(Customizer.withDefaults())

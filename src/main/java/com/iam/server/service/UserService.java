@@ -17,4 +17,8 @@ public interface UserService {
 
     User removeRoleFromUser(String username, String roleName);
 
+    String createPasswordResetToken(String username);
+
+    void resetPassword(String token, String newPassword);
+
 }
