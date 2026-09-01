@@ -1,0 +1,18 @@
+# Gradle
+.gradle/
+build/
+bin/
+
+# IDE
+.classpath
+.project
+.settings/
+*.iml
+.idea/
+
+# Java
+*.class
+*.jar
+
+# Logs
+*.log
