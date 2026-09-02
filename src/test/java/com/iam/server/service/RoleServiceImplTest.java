@@ -1,5 +1,10 @@
 package com.iam.server.service;
 
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -184,5 +189,19 @@ class RoleServiceImplTest {
         );
 
         verify(roleRepository, never()).save(any(Role.class));
-    }
+ }
+ @Test
+void createRole_shouldReturnExistingRole() {
+    Role existingRole = new Role("ADMIN");
+
+    when(roleRepository.findByName("ADMIN"))
+            .thenReturn(Optional.of(existingRole));
+
+    Role result = roleService.createRole("ADMIN");
+
+    assertEquals(existingRole, result);
+    verify(roleRepository, never()).save(any(Role.class));
+}
+
+
 }
