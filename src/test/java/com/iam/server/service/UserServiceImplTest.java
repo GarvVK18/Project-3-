@@ -297,4 +297,5 @@ void updateUsername_shouldKeepCurrentUsernameWhenNewUsernameIsBlank() {
     assertEquals("pranav", result.getUsername());
     verify(userRepository).save(user);
 }
+
 }
