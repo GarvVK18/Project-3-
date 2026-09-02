@@ -240,4 +240,27 @@ class UserServiceImplTest {
         verify(passwordEncoder).encode("newPassword");
         verify(userRepository).save(user);
     }
+    @Test
+void assignRoleToUser_shouldCreateRoleWhenRoleDoesNotExist() {
+    User user = new User("pranav", "password");
+
+    when(userRepository.findByUsername("pranav"))
+            .thenReturn(Optional.of(user));
+    when(roleRepository.findByName("ADMIN"))
+            .thenReturn(Optional.empty());
+
+    Role newRole = new Role("ADMIN");
+    when(roleRepository.save(any(Role.class)))
+            .thenReturn(newRole);
+    when(userRepository.save(user))
+            .thenReturn(user);
+
+    User result = userService.assignRoleToUser("pranav", "ADMIN");
+
+    assertEquals(user, result);
+    assertTrue(user.getRoles().contains(newRole));
+
+    verify(roleRepository).save(any(Role.class));
+    verify(userRepository).save(user);
+}
 }
