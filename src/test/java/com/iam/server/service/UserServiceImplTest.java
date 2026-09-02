@@ -297,5 +297,16 @@ void updateUsername_shouldKeepCurrentUsernameWhenNewUsernameIsBlank() {
     assertEquals("pranav", result.getUsername());
     verify(userRepository).save(user);
 }
+@Test
+void updateUsername_shouldThrowWhenCurrentUserDoesNotExist() {
+    when(userRepository.findByUsername("unknown"))
+            .thenReturn(Optional.empty());
 
+    assertThrows(
+            RuntimeException.class,
+            () -> userService.updateUsername("unknown", "pranav")
+    );
+
+    verify(userRepository, never()).save(any(User.class));
+}
 }
