@@ -283,4 +283,18 @@ void removeRoleFromUser_shouldThrowWhenUserDoesNotExist() {
 
     verify(userRepository, never()).save(any(User.class));
 }
+@Test
+void updateUsername_shouldKeepCurrentUsernameWhenNewUsernameIsBlank() {
+    User user = new User("pranav", "password");
+
+    when(userRepository.findByUsername("pranav"))
+            .thenReturn(Optional.of(user));
+    when(userRepository.save(user))
+            .thenReturn(user);
+
+    User result = userService.updateUsername("pranav", " ");
+
+    assertEquals("pranav", result.getUsername());
+    verify(userRepository).save(user);
+}
 }
