@@ -25,6 +25,12 @@ public class User {
     @Column(nullable = false)
     private boolean enabled = true;
 
+    @Column(name = "mfa_enabled", nullable = false)
+    private boolean mfaEnabled = false;
+
+    @Column(name = "totp_secret")
+    private String totpSecret;
+
     @ManyToMany
     @JoinTable(
         name = "user_roles",
@@ -99,4 +105,20 @@ public class User {
     public void setPasswordResetTokenExpiry(java.time.LocalDateTime passwordResetTokenExpiry) {
         this.passwordResetTokenExpiry = passwordResetTokenExpiry;
     }
+
+public boolean isMfaEnabled() {
+    return mfaEnabled;
+}
+
+public void setMfaEnabled(boolean mfaEnabled) {
+    this.mfaEnabled = mfaEnabled;
+}
+
+public String getTotpSecret() {
+    return totpSecret;
+}
+
+public void setTotpSecret(String totpSecret) {
+    this.totpSecret = totpSecret;
+}
 }
