@@ -259,4 +259,16 @@ void removeRoleFromUser_shouldThrowWhenRoleDoesNotExist() {
 
     verify(userRepository, never()).save(any(User.class));
 }
+@Test
+void assignRoleToUser_shouldThrowWhenUserDoesNotExist() {
+    when(userRepository.findByUsername("unknown"))
+            .thenReturn(Optional.empty());
+
+    assertThrows(
+            RuntimeException.class,
+            () -> userService.assignRoleToUser("unknown", "ADMIN")
+    );
+
+    verify(userRepository, never()).save(any(User.class));
+}
 }
