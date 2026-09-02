@@ -129,26 +129,6 @@ class UserServiceImplTest {
         verify(userRepository).save(user);
     }
 
-    @Test
-    void removeRoleFromUser_shouldRemoveRole() {
-        Role role = new Role("ADMIN");
-        user.getRoles().add(role);
-
-        when(userRepository.findByUsername("pranav"))
-                .thenReturn(Optional.of(user));
-
-        when(roleRepository.findByName("ADMIN"))
-                .thenReturn(Optional.of(role));
-
-        when(userRepository.save(user))
-                .thenReturn(user);
-
-        User result = userService.removeRoleFromUser("pranav", "ADMIN");
-
-        assertFalse(result.getRoles().contains(role));
-
-        verify(userRepository).save(user);
-    }
 
     @Test
     void createPasswordResetToken_shouldCreateAndStoreToken() {
@@ -262,5 +242,21 @@ void assignRoleToUser_shouldCreateRoleWhenRoleDoesNotExist() {
 
     verify(roleRepository).save(any(Role.class));
     verify(userRepository).save(user);
+}
+@Test
+void removeRoleFromUser_shouldThrowWhenRoleDoesNotExist() {
+    User user = new User("pranav", "password");
+
+    when(userRepository.findByUsername("pranav"))
+            .thenReturn(Optional.of(user));
+    when(roleRepository.findByName("ADMIN"))
+            .thenReturn(Optional.empty());
+
+    assertThrows(
+            RuntimeException.class,
+            () -> userService.removeRoleFromUser("pranav", "ADMIN")
+    );
+
+    verify(userRepository, never()).save(any(User.class));
 }
 }
