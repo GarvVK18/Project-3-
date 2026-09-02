@@ -202,6 +202,20 @@ void createRole_shouldReturnExistingRole() {
     assertEquals(existingRole, result);
     verify(roleRepository, never()).save(any(Role.class));
 }
+@Test
+void removeAuthorityFromRole_shouldThrowWhenAuthorityDoesNotExist() {
+    Role role = new Role("ADMIN");
 
+    when(roleRepository.findByName("ADMIN"))
+            .thenReturn(Optional.of(role));
+    when(authorityRepository.findByName("READ"))
+            .thenReturn(Optional.empty());
 
+    assertThrows(
+            RuntimeException.class,
+            () -> roleService.removeAuthorityFromRole("ADMIN", "READ")
+    );
+
+    verify(roleRepository, never()).save(any(Role.class));
+}
 }
