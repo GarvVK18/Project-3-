@@ -77,15 +77,73 @@ Identity and Access Management (IAM) Server built with Spring Boot 3, Spring Sec
 
 ---
 
-## Build & Run
+## Features Implemented in Week 4: Auditing, Rate Limiting & Productionization
 
+### 1. Comprehensive Audit Logging System (`/api/admin/audit-logs/**`)
+- **Database Schema & Entity:** Persists security events into PostgreSQL `audit_logs` table (`id`, `timestamp`, `event_type`, `username`, `ip_address`, `status`, `details`).
+- **Automated Event Listeners:** `SecurityAuditEventListener` listens to Spring Security's `AuthenticationSuccessEvent` and `AbstractAuthenticationFailureEvent` to log user activity.
+- **Admin Endpoints (`@PreAuthorize("hasRole('ADMIN')")`):**
+  - `GET /api/admin/audit-logs`: Retrieves the 100 most recent security events.
+  - `GET /api/admin/audit-logs/user/{username}`: Retrieves complete event history for a user.
+  - `GET /api/admin/audit-logs/type/{eventType}`: Retrieves audit events by event type.
+
+### 2. Strict Rate Limiting (Brute-Force Protection)
+- **Sliding Window Rate Limiter:** Implemented `RateLimitingService` backed by Redis counters with TTL and graceful in-memory fallback.
+- **Security Filter (`RateLimitingFilter`):** Intercepts authentication requests (`/api/auth/login`, `/api/auth/mfa/verify-login`, `/api/auth/password-reset/**`), allowing max 5 requests per 60 seconds per IP.
+- **429 Response Headers:** Automatically returns HTTP `429 Too Many Requests` with `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset`, and `Retry-After`.
+
+### 3. Productionization & Deployment
+- **Multi-stage Dockerfile:** Builds and packages IAM Server with OpenJDK 17 on Alpine Linux, running as an unprivileged non-root user (`iamuser`).
+- **Docker Compose:** Single command deployment (`docker compose up -d`) orchestrating:
+  - `iam-server`: Spring Boot application (Port 9000)
+  - `postgres`: PostgreSQL 16 (Port 5432) with persistent volume & healthcheck
+  - `redis`: Redis 7 Alpine (Port 6379) with persistent volume & healthcheck
+- **Kubernetes Manifests (`k8s/`):** Production manifests for local cluster deployment (Minikube / Docker Desktop):
+  - `config.yaml`: ConfigMap & Secret definitions
+  - `data-services.yaml`: PostgreSQL & Redis Deployments with Services
+  - `iam-server.yaml`: Replicated IAM Server Deployment (with liveness/readiness probes) & NodePort Service (Port 30090)
+- **API Contract:** Full documentation in [`API_CONTRACT.md`](API_CONTRACT.md).
+
+---
+
+## Build, Test & Run
+
+### 1. Build and Run Tests Locally
 ```bash
 # Build Java sources using Gradle
 gradle compileJava
 
-# Run all automated tests (85 tests covering Week 1, 2, and 3)
+# Run all 93 automated tests (Weeks 1 through 4)
 gradle test
 
-# Build full project jar
-gradle build
-```
+# Build executable jar
+gradle bootJar
+```
+
+### 2. Run with Docker Compose
+```bash
+# Start IAM Server, PostgreSQL, and Redis together
+docker compose up -d --build
+
+# View container logs
+docker compose logs -f iam-server
+
+# Stop services
+docker compose down
+```
+
+### 3. Deploy to Kubernetes (Minikube / Docker Desktop)
+```bash
+# Apply configuration and secrets
+kubectl apply -f k8s/config.yaml
+
+# Deploy database and cache
+kubectl apply -f k8s/data-services.yaml
+
+# Deploy IAM Server
+kubectl apply -f k8s/iam-server.yaml
+
+# Verify pods
+kubectl get pods
+```
+
