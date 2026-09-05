@@ -66,7 +66,10 @@ public class DataInitializer implements CommandLineRunner {
         // Seed default admin user if not present
         if (userRepository.findByUsername("admin").isEmpty()) {
             User admin = new User("admin", passwordEncoder.encode("Admin@123"));
-            admin.setRoles(Set.of(adminRole, userRole));
+            Set<Role> roles = new java.util.HashSet<>();
+            roles.add(adminRole);
+            roles.add(userRole);
+            admin.setRoles(roles);
             admin.setEnabled(true);
             userRepository.save(admin);
             log.info("Initialized default admin account: username='admin'");
