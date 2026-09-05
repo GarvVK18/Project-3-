@@ -31,6 +31,15 @@ public class User {
     @Column(name = "totp_secret")
     private String totpSecret;
 
+    @Column(name = "email")
+    private String email;
+
+    @Column(name = "phone_number")
+    private String phoneNumber;
+
+    @Column(name = "mfa_type")
+    private String mfaType = "NONE";
+
     @ManyToMany
     @JoinTable(
         name = "user_roles",
@@ -114,11 +123,35 @@ public void setMfaEnabled(boolean mfaEnabled) {
     this.mfaEnabled = mfaEnabled;
 }
 
-public String getTotpSecret() {
-    return totpSecret;
-}
+    public String getTotpSecret() {
+        return totpSecret;
+    }
 
-public void setTotpSecret(String totpSecret) {
-    this.totpSecret = totpSecret;
-}
+    public void setTotpSecret(String totpSecret) {
+        this.totpSecret = totpSecret;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+
+    public String getMfaType() {
+        return mfaType;
+    }
+
+    public void setMfaType(String mfaType) {
+        this.mfaType = mfaType;
+    }
 }
