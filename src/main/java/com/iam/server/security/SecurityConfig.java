@@ -19,12 +19,15 @@ public class SecurityConfig {
 
     private final CustomUserDetailsService userDetailsService;
     private final JwtRevocationFilter jwtRevocationFilter;
+    private final RateLimitingFilter rateLimitingFilter;
 
     public SecurityConfig(
             CustomUserDetailsService userDetailsService,
-            JwtRevocationFilter jwtRevocationFilter) {
+            JwtRevocationFilter jwtRevocationFilter,
+            RateLimitingFilter rateLimitingFilter) {
         this.userDetailsService = userDetailsService;
         this.jwtRevocationFilter = jwtRevocationFilter;
+        this.rateLimitingFilter = rateLimitingFilter;
     }
 
     @Bean
@@ -64,6 +67,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/revoke").permitAll()
                 .anyRequest().authenticated()
             )
+            .addFilterBefore(rateLimitingFilter, UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(jwtRevocationFilter, UsernamePasswordAuthenticationFilter.class)
             .formLogin(Customizer.withDefaults())
             .httpBasic(Customizer.withDefaults());
