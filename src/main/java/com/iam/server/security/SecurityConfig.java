@@ -11,15 +11,20 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableMethodSecurity
 public class SecurityConfig {
 
     private final CustomUserDetailsService userDetailsService;
+    private final JwtRevocationFilter jwtRevocationFilter;
 
-    public SecurityConfig(CustomUserDetailsService userDetailsService) {
+    public SecurityConfig(
+            CustomUserDetailsService userDetailsService,
+            JwtRevocationFilter jwtRevocationFilter) {
         this.userDetailsService = userDetailsService;
+        this.jwtRevocationFilter = jwtRevocationFilter;
     }
 
     @Bean
@@ -55,8 +60,11 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/register").permitAll()
                 .requestMatchers("/api/auth/login").permitAll()
                 .requestMatchers("/api/auth/password-reset/**").permitAll()
+                .requestMatchers("/api/auth/mfa/**").permitAll()
+                .requestMatchers("/api/auth/revoke").permitAll()
                 .anyRequest().authenticated()
             )
+            .addFilterBefore(jwtRevocationFilter, UsernamePasswordAuthenticationFilter.class)
             .formLogin(Customizer.withDefaults())
             .httpBasic(Customizer.withDefaults());
 
