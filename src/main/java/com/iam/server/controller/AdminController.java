@@ -27,18 +27,10 @@ public class AdminController {
 
     private final UserService userService;
     private final RoleService roleService;
-    @org.springframework.beans.factory.annotation.Autowired(required = false)
-    private com.iam.server.service.AuditLogService auditLogService;
 
     public AdminController(UserService userService, RoleService roleService) {
         this.userService = userService;
         this.roleService = roleService;
-    }
-
-    public AdminController(UserService userService, RoleService roleService, com.iam.server.service.AuditLogService auditLogService) {
-        this.userService = userService;
-        this.roleService = roleService;
-        this.auditLogService = auditLogService;
     }
 
     // --- Role management ---
@@ -93,16 +85,6 @@ public class AdminController {
 
         User user = userService.removeRoleFromUser(username, roleName);
         return ResponseEntity.ok(toProfileResponse(user));
-    }
-
-    // --- Audit Logs ---
-
-    @GetMapping("/audit-logs")
-    public ResponseEntity<List<com.iam.server.entity.AuditLog>> getAuditLogs() {
-        if (auditLogService != null) {
-            return ResponseEntity.ok(auditLogService.getRecentLogs());
-        }
-        return ResponseEntity.ok(List.of());
     }
 
     // --- Helpers ---
