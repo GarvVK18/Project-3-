@@ -26,10 +26,11 @@ public class SecurityConfig {
         this.userDetailsService = userDetailsService;
     }
 
+    @org.springframework.beans.factory.annotation.Autowired
     public SecurityConfig(
             CustomUserDetailsService userDetailsService,
-            RateLimitingFilter rateLimitingFilter,
-            JwtRevocationFilter jwtRevocationFilter) {
+            @org.springframework.beans.factory.annotation.Autowired(required = false) RateLimitingFilter rateLimitingFilter,
+            @org.springframework.beans.factory.annotation.Autowired(required = false) JwtRevocationFilter jwtRevocationFilter) {
         this.userDetailsService = userDetailsService;
         this.rateLimitingFilter = rateLimitingFilter;
         this.jwtRevocationFilter = jwtRevocationFilter;
