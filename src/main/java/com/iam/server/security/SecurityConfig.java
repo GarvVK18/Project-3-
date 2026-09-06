@@ -17,9 +17,22 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfig {
 
     private final CustomUserDetailsService userDetailsService;
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    private RateLimitingFilter rateLimitingFilter;
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    private JwtRevocationFilter jwtRevocationFilter;
 
     public SecurityConfig(CustomUserDetailsService userDetailsService) {
         this.userDetailsService = userDetailsService;
+    }
+
+    public SecurityConfig(
+            CustomUserDetailsService userDetailsService,
+            RateLimitingFilter rateLimitingFilter,
+            JwtRevocationFilter jwtRevocationFilter) {
+        this.userDetailsService = userDetailsService;
+        this.rateLimitingFilter = rateLimitingFilter;
+        this.jwtRevocationFilter = jwtRevocationFilter;
     }
 
     @Bean
@@ -49,12 +62,24 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(
             HttpSecurity http) throws Exception {
 
+        if (rateLimitingFilter != null) {
+            http.addFilterBefore(rateLimitingFilter, org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class);
+        }
+
+        if (jwtRevocationFilter != null) {
+            http.addFilterBefore(jwtRevocationFilter, org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class);
+        }
+
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/register").permitAll()
                 .requestMatchers("/api/auth/login").permitAll()
                 .requestMatchers("/api/auth/password-reset/**").permitAll()
+                .requestMatchers("/api/auth/revoke").permitAll()
+                .requestMatchers("/api/mfa/verify").permitAll()
+                .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                .requestMatchers("/actuator/**").permitAll()
                 .anyRequest().authenticated()
             )
             .formLogin(Customizer.withDefaults())
