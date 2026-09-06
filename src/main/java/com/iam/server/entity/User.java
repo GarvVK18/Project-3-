@@ -39,6 +39,13 @@ public class User {
     @Column(name = "password_reset_token_expiry")
     private java.time.LocalDateTime passwordResetTokenExpiry;
 
+    @Column(name = "mfa_enabled", nullable = false)
+    private boolean mfaEnabled = false;
+
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    @Column(name = "mfa_secret")
+    private String mfaSecret;
+
     public User() {
 
     }
@@ -98,5 +105,21 @@ public class User {
 
     public void setPasswordResetTokenExpiry(java.time.LocalDateTime passwordResetTokenExpiry) {
         this.passwordResetTokenExpiry = passwordResetTokenExpiry;
+    }
+
+    public boolean isMfaEnabled() {
+        return mfaEnabled;
+    }
+
+    public void setMfaEnabled(boolean mfaEnabled) {
+        this.mfaEnabled = mfaEnabled;
+    }
+
+    public String getMfaSecret() {
+        return mfaSecret;
+    }
+
+    public void setMfaSecret(String mfaSecret) {
+        this.mfaSecret = mfaSecret;
     }
 }
