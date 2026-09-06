@@ -46,4 +46,26 @@ class AuditLogServiceTest {
         assertEquals(1, logs.size());
         assertEquals("user1", logs.get(0).getUsername());
     }
+
+    @Test
+    void getLogsForUser_shouldReturnUserLogs() {
+        AuditLog log1 = new AuditLog("pranav", "LOGIN_SUCCESS", "SUCCESS", "127.0.0.1", "OK");
+        when(auditLogRepository.findByUsernameOrderByTimestampDesc("pranav")).thenReturn(List.of(log1));
+
+        List<AuditLog> logs = auditLogService.getLogsForUser("pranav");
+
+        assertEquals(1, logs.size());
+        assertEquals("pranav", logs.get(0).getUsername());
+    }
+
+    @Test
+    void getLogsByType_shouldReturnFilteredLogs() {
+        AuditLog log1 = new AuditLog("pranav", "TOKEN_GENERATED", "SUCCESS", "127.0.0.1", "Token OK");
+        when(auditLogRepository.findByActionOrderByTimestampDesc("TOKEN_GENERATED")).thenReturn(List.of(log1));
+
+        List<AuditLog> logs = auditLogService.getLogsByType("TOKEN_GENERATED");
+
+        assertEquals(1, logs.size());
+        assertEquals("TOKEN_GENERATED", logs.get(0).getAction());
+    }
 }

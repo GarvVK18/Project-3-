@@ -43,6 +43,9 @@ import com.nimbusds.jose.proc.SecurityContext;
 @Configuration
 public class AuthorizationServerConfig {
 
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    private com.iam.server.service.AuditLogService auditLogService;
+
     @Bean
     @Order(1)
     public SecurityFilterChain authorizationServerSecurityFilterChain(
@@ -132,6 +135,17 @@ public class AuthorizationServerConfig {
                     JwtClaimsSet.Builder claims = context.getClaims();
                     claims.claim("roles", roles);
                     claims.claim("permissions", permissions);
+
+                    if (auditLogService != null && OAuth2TokenType.ACCESS_TOKEN.equals(context.getTokenType())) {
+                        String clientId = context.getRegisteredClient() != null ? context.getRegisteredClient().getClientId() : "client";
+                        auditLogService.logEvent(
+                                principal.getName(),
+                                "TOKEN_GENERATED",
+                                "SUCCESS",
+                                "127.0.0.1",
+                                "OAuth2 Access Token generated for client: " + clientId
+                        );
+                    }
                 }
             }
         };

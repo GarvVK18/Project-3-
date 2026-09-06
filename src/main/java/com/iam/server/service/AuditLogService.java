@@ -42,4 +42,8 @@ public class AuditLogService {
     public List<AuditLog> getLogsForUser(String username) {
         return auditLogRepository.findByUsernameOrderByTimestampDesc(username);
     }
+
+    public List<AuditLog> getLogsByType(String eventType) {
+        return auditLogRepository.findByActionOrderByTimestampDesc(eventType);
+    }
 }
