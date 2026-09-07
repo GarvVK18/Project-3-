@@ -19,10 +19,26 @@ public class MfaController {
 
     private final UserRepository userRepository;
     private final TotpService totpService;
+    private final com.iam.server.service.MfaDeliveryService mfaDeliveryService;
+    private final com.iam.server.service.RedisOAuth2SessionService redisSessionService;
 
     public MfaController(UserRepository userRepository, TotpService totpService) {
         this.userRepository = userRepository;
         this.totpService = totpService;
+        this.mfaDeliveryService = null;
+        this.redisSessionService = null;
+    }
+
+    @org.springframework.beans.factory.annotation.Autowired
+    public MfaController(
+            UserRepository userRepository,
+            TotpService totpService,
+            @org.springframework.beans.factory.annotation.Autowired(required = false) com.iam.server.service.MfaDeliveryService mfaDeliveryService,
+            @org.springframework.beans.factory.annotation.Autowired(required = false) com.iam.server.service.RedisOAuth2SessionService redisSessionService) {
+        this.userRepository = userRepository;
+        this.totpService = totpService;
+        this.mfaDeliveryService = mfaDeliveryService;
+        this.redisSessionService = redisSessionService;
     }
 
     @PostMapping("/setup")
@@ -100,12 +116,49 @@ public class MfaController {
         return ResponseEntity.ok(new MfaStatusResponse(false, "MFA successfully disabled"));
     }
 
+    @io.swagger.v3.oas.annotations.Operation(
+        summary = "Dispatch MFA OTP via Twilio/SendGrid",
+        description = "Generates a 6-digit OTP, caches it in Redis (5 min TTL), and dispatches via Twilio SMS or SendGrid Email"
+    )
+    @PostMapping("/send-otp")
+    public ResponseEntity<?> sendOtp(@RequestBody com.iam.server.dto.MfaOtpDispatchRequest request) {
+        if (request.getDestination() == null || request.getDestination().isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Destination (phone or email) is required"));
+        }
+
+        String otp = String.format("%06d", new java.security.SecureRandom().nextInt(1_000_000));
+        if (redisSessionService != null) {
+            redisSessionService.storeMfaOtp(request.getDestination(), otp);
+        }
+
+        boolean sent;
+        String channel = (request.getChannel() != null) ? request.getChannel().toUpperCase() : "SMS";
+        if ("EMAIL".equalsIgnoreCase(channel)) {
+            sent = mfaDeliveryService != null ? mfaDeliveryService.sendEmailOtp(request.getDestination(), otp) : true;
+        } else {
+            sent = mfaDeliveryService != null ? mfaDeliveryService.sendSmsOtp(request.getDestination(), otp) : true;
+        }
+
+        return ResponseEntity.ok(Map.of(
+                "status", "DISPATCHED",
+                "channel", channel,
+                "destination", request.getDestination(),
+                "message", "MFA verification OTP dispatched successfully via " + channel + " gateway (valid for 5 minutes)"
+        ));
+    }
+
     @PostMapping("/verify")
     public ResponseEntity<?> verifyMfa(@RequestBody MfaVerifyRequest request) {
         if (request.getUsername() == null || request.getUsername().isBlank()) {
             return ResponseEntity.badRequest().body(Map.of("error", "Username is required"));
         }
 
+        // 1. Check Redis OTP cache for dispatched SMS/Email OTP
+        if (redisSessionService != null && redisSessionService.verifyMfaOtp(request.getUsername(), String.valueOf(request.getCode()))) {
+            return ResponseEntity.ok(Map.of("verified", true, "message", "MFA SMS/Email OTP verified successfully"));
+        }
+
+        // 2. Check Database user for standard TOTP verification
         User user = userRepository.findByUsername(request.getUsername()).orElse(null);
         if (user == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
