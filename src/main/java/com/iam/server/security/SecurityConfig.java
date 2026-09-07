@@ -78,7 +78,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/login").permitAll()
                 .requestMatchers("/api/auth/password-reset/**").permitAll()
                 .requestMatchers("/api/auth/revoke").permitAll()
-                .requestMatchers("/api/mfa/verify").permitAll()
+                .requestMatchers("/api/mfa/**").permitAll()
                 .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                 .requestMatchers("/actuator/**").permitAll()
                 .anyRequest().authenticated()
