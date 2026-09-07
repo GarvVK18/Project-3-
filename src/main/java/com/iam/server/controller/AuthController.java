@@ -27,16 +27,48 @@ public class AuthController {
         this.authenticationManager = authenticationManager;
     }
 
+    @io.swagger.v3.oas.annotations.Operation(
+        summary = "Register new user",
+        description = "Registers a new user account with BCrypt password hashing"
+    )
     @PostMapping("/register")
-    public ResponseEntity<User> register(@RequestBody User user) {
+    public ResponseEntity<User> register(
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                description = "User registration details",
+                required = true,
+                content = @io.swagger.v3.oas.annotations.media.Content(
+                    schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = User.class),
+                    examples = @io.swagger.v3.oas.annotations.media.ExampleObject(
+                        name = "Default Registration",
+                        value = "{\n  \"username\": \"pranav_test\",\n  \"password\": \"SecretPassword123!\"\n}"
+                    )
+                )
+            )
+            @RequestBody User user) {
 
         User savedUser = userService.saveUser(user);
 
         return ResponseEntity.ok(savedUser);
     }
 
+    @io.swagger.v3.oas.annotations.Operation(
+        summary = "User login",
+        description = "Authenticates user credentials and checks rate limiting"
+    )
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody User user) {
+    public ResponseEntity<String> login(
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                description = "User login credentials",
+                required = true,
+                content = @io.swagger.v3.oas.annotations.media.Content(
+                    schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = User.class),
+                    examples = @io.swagger.v3.oas.annotations.media.ExampleObject(
+                        name = "Default Login",
+                        value = "{\n  \"username\": \"pranav_test\",\n  \"password\": \"SecretPassword123!\"\n}"
+                    )
+                )
+            )
+            @RequestBody User user) {
 
         Authentication authentication =
                 authenticationManager.authenticate(
