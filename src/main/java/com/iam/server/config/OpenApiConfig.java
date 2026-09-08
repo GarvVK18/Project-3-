@@ -17,6 +17,9 @@ public class OpenApiConfig {
     public OpenAPI customOpenAPI() {
         final String securitySchemeName = "bearerAuth";
         return new OpenAPI()
+                .servers(java.util.List.of(
+                        new io.swagger.v3.oas.models.servers.Server().url("/").description("Current Protocol & Host")
+                ))
                 .info(new Info()
                         .title("Identity and Access Management (IAM) Server API")
                         .version("1.0.0")
