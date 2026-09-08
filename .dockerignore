@@ -5,5 +5,6 @@
 .classpath
 .project
 bin
-build
+build/*
+!build/libs/*.jar
 *.log
