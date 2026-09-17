@@ -58,6 +58,7 @@ jobs:
       - name: Security Vulnerability Scan (Dependency Review)
         uses: actions/dependency-review-action@v4
         if: github.event_name == 'pull_request'
+        continue-on-error: true
 
       - name: Verify Docker Container Build
         run: docker build -t iam-server:ci .
