@@ -45,7 +45,6 @@ public class AuthController {
                 )
             )
             @RequestBody User user) {
-
         if (user.getUsername() == null || user.getUsername().isBlank()) {
             throw new org.springframework.web.server.ResponseStatusException(
                     org.springframework.http.HttpStatus.BAD_REQUEST, "Username is required");
