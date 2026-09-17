@@ -13,6 +13,7 @@ bin/
 # Java
 *.class
 *.jar
+!gradle/wrapper/gradle-wrapper.jar
 
 # Logs
 *.log
