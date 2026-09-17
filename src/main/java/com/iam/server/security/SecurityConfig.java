@@ -82,6 +82,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/mfa/**").permitAll()
                 .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                 .requestMatchers("/actuator/**").permitAll()
+                .requestMatchers("/error").permitAll()
                 .anyRequest().authenticated()
             )
             .formLogin(Customizer.withDefaults())
