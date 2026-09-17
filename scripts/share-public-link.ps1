@@ -7,5 +7,5 @@ if (-not (Test-Path $cloudflared)) {
     Invoke-WebRequest -Uri "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-windows-amd64.exe" -OutFile $cloudflared -UseBasicParsing
 }
 
-Write-Host "Starting tunnel. Share the generated https://*.trycloudflare.com link with your friends or evaluators!" -ForegroundColor Green
-& $cloudflared tunnel --url http://localhost:9000
+Write-Host "Starting tunnel with reliable TCP http2 protocol..." -ForegroundColor Green
+& $cloudflared tunnel --url http://localhost:9000 --protocol http2
