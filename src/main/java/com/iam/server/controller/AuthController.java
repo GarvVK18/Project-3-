@@ -46,6 +46,15 @@ public class AuthController {
             )
             @RequestBody User user) {
 
+        if (user.getUsername() == null || user.getUsername().isBlank()) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.BAD_REQUEST, "Username is required");
+        }
+        if (userService.findByUsername(user.getUsername()).isPresent()) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.CONFLICT, "Username '" + user.getUsername() + "' is already registered. Please choose another username or log in.");
+        }
+
         User savedUser = userService.saveUser(user);
 
         return ResponseEntity.ok(savedUser);
